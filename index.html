@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>致张诗敏的星夜私语</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            height: 100vh; 
+            overflow: hidden; 
+            background: #000814;
+            perspective: 1000px;
+        }
+        /* ------------------------------ 背景层（银河+星云） ------------------------------ */
+        .galaxy {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(120deg, rgba(100, 149, 237, 0.1) 0%, rgba(70, 130, 180, 0.2) 50%, rgba(100, 149, 237, 0.1) 100%);
+            background-size: 50% 50%;
+            animation: galaxy-flow 60s linear infinite;
+            opacity: 0.7;
+            z-index: 0;
+        }
+        @keyframes galaxy-flow {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50%, -50%); }
+        }
+        .nebula {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://picsum.photos/id/12/1920/1080') no-repeat center/cover;
+            opacity: 0.15;
+            animation: nebula-drift 80s linear infinite;
+            z-index: 0;
+        }
+        @keyframes nebula-drift {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.2) translate(-5%, -5%); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+        /* ------------------------------ 天体基础样式（太阳+月亮） ------------------------------ */
+        .celestial {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .sun {
+            left: 50px;
+            top: 50px;
+            background: radial-gradient(circle, #fff38a 0%, #ff9800 80%, #ff5722 100%);
+            box-shadow: 0 0 40px rgba(255, 255, 0, 0.8), 0 0 80px rgba(255, 165, 0, 0.6), 0 0 120px rgba(255, 69, 0, 0.4);
+            animation: rotate 25s linear infinite, glowSun 4s ease-in-out infinite;
+        }
+        .moon {
+            right: 50px;
+            top: 50px;
+            background: radial-gradient(circle, #ffffff 0%, #e3f2fd 80%, #bbdefb 100%);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(173, 216, 230, 0.6), 0 0 120px rgba(135, 206, 250, 0.4);
+            animation: rotate 35s linear infinite reverse, glowMoon 4s ease-in-out infinite;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes glowSun {
+            0% { box-shadow: 0 0 40px rgba(255, 255, 0, 0.8), 0 0 80px rgba(255, 165, 0, 0.6), 0 0 120px rgba(255, 69, 0, 0.4); }
+            50% { box-shadow: 0 0 60px rgba(255, 255, 0, 1), 0 0 100px rgba(255, 165, 0, 0.8), 0 0 140px rgba(255, 69, 0, 0.6); }
+            100% { box-shadow: 0 0 40px rgba(255, 255, 0, 0.8), 0 0 80px rgba(255, 165, 0, 0.6), 0 0 120px rgba(255, 69, 0, 0.4); }
+        }
+        @keyframes glowMoon {
+            0% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(173, 216, 230, 0.6), 0 0 120px rgba(135, 206, 250, 0.4); }
+            50% { box-shadow: 0 0 60px rgba(255, 255, 255, 1), 0 0 100px rgba(173, 216, 230, 0.8), 0 0 140px rgba(135, 206, 250, 0.6); }
+            100% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(173, 216, 230, 0.6), 0 0 120px rgba(135, 206, 250, 0.4); }
+        }
+        /* ------------------------------ 星星层（Canvas） ------------------------------ */
+        #starsCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        /* ------------------------------ 流星层（Canvas） ------------------------------ */
+        #meteorsCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+        /* ------------------------------ 立方体容器 ------------------------------ */
+        .cube-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            z-index: 3;
+            filter: drop-shadow(0 0 20px #ff0077) drop-shadow(0 0 40px #00ccff);
+            animation: cyberPulse 4s infinite ease-in-out;
+        }
+        @keyframes cyberPulse {
+            0%, 100% { filter: drop-shadow(0 0 20px #ff0077) drop-shadow(0 0 40px #00ccff); }
+            50% { filter: drop-shadow(0 0 40px #ff0077) drop-shadow(0 0 60px #00ccff) drop-shadow(0 0 80px #cc00ff); }
+        }
+        /* 立方体样式 */
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotateCube 15s infinite linear;
+        }
+        .cube-face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: rgba(0,0,0,0.7);
+            border: 3px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px #00ccff;
+            opacity: 0.85;
+            backdrop-filter: blur(5px);
+        }
+        .front  { 
+            transform: translateZ(100px); 
+            border-color: #ff0077;
+            box-shadow: inset 0 0 50px #ff0077, 0 0 30px #ff0077;
+        }
+        .back   { 
+            transform: rotateY(180deg) translateZ(100px);
+            border-color: #00ccff;
+            box-shadow: inset 0 0 50px #00ccff, 0 0 30px #00ccff;
+        }
+        .right  { 
+            transform: rotateY(90deg) translateZ(100px);
+            border-color: #cc00ff;
+            box-shadow: inset 0 0 50px #cc00ff, 0 0 30px #cc00ff;
+        }
+        .left   { 
+            transform: rotateY(-90deg) translateZ(100px);
+            border-color: #ff9900;
+            box-shadow: inset 0 0 50px #ff9900, 0 0 30px #ff9900;
+        }
+        .top    { 
+            transform: rotateX(90deg) translateZ(100px);
+            border-color: #00ff99;
+            box-shadow: inset 0 0 50px #00ff99, 0 0 30px #00ff99;
+        }
+        .bottom { 
+            transform: rotateX(-90deg) translateZ(100px);
+            border-color: #ffcc00;
+            box-shadow: inset 0 0 50px #ffcc00, 0 0 30px #ffcc00;
+        }
+        @keyframes rotateCube {
+            0%   { transform: rotateX(0) rotateY(0) rotateZ(0); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+        /* ------------------------------ 情诗层 ------------------------------ */
+        .poem-container {
+            position: fixed;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 700px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.01);
+            border-radius: 30px;
+            backdrop-filter: blur(80px);
+            box-shadow: 0 0 40px rgba(255, 182, 193, 0.4);
+            z-index: 3;
+            cursor: pointer;
+        }
+        .poem {
+            font-family: 'ZCOOL QingKe HuangYou', sans-serif;
+            font-size: 1.6rem;
+            text-align: center;
+            background: linear-gradient(45deg, #fff, #ffc0cb, #ff0077);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 2;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            opacity: 1;
+            animation: textNeon 3s infinite alternate;
+        }
+        @keyframes textNeon {
+            0% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.7), 0 0 12px #ff0077; }
+            100% { text-shadow: 0 0 12px rgba(255, 255, 255, 0.9), 0 0 20px #00ccff; }
+        }
+        /* ------------------------------ 音乐控制 ------------------------------ */
+        .music-control {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 4;
+            transition: all 0.3s ease;
+        }
+        .music-control:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #ff0077;
+        }
+        .music-icon {
+            font-size: 30px;
+            color: #fff;
+        }
+        /* ------------------------------ 响应式设计 ------------------------------ */
+        @media (max-width: 768px) {
+            .cube-container { width: 150px; height: 150px; }
+            .cube-face { width: 150px; height: 150px; font-size: 30px; }
+            .poem { font-size: 1.2rem; }
+            .music-control { width: 50px; height: 50px; }
+            .music-icon { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 1. 背景层 -->
+    <div class="galaxy"></div>
+    <div class="nebula"></div>
+    <!-- 2. 太阳和月亮 -->
+    <div class="sun celestial"></div>
+    <div class="moon celestial"></div>
+    <!-- 3. 星星/流星层 -->
+    <canvas id="starsCanvas"></canvas>
+    <canvas id="meteorsCanvas"></canvas>
+    <!-- 4. 立方体 -->
+    <div class="cube-container">
+        <div class="cube">
+            <div class="cube-face front">大</div>
+            <div class="cube-face back">渣</div>
+            <div class="cube-face right">女</div>
+            <div class="cube-face left">张</div>
+            <div class="cube-face top">诗</div>
+            <div class="cube-face bottom">敏</div>
+        </div>
+    </div>
+    <!-- 5. 情诗层 -->
+    <div class="poem-container">
+        <p class="poem" id="poem">点击这里，换一句藏在星星里的话</p>
+    </div>
+    <!-- 6. 音乐控制 -->
+    <div class="music-control" id="musicControl">
+        <span class="music-icon">♪</span>
+    </div>
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop>
+         <source src="love.mp3" type="audio/mpeg">
+    </audio>
+    <script>
+        // Canvas Retina适配
+        const starsCanvas = document.getElementById('starsCanvas');
+        const starsCtx = starsCanvas.getContext('2d');
+        const meteorsCanvas = document.getElementById('meteorsCanvas');
+        const meteorsCtx = meteorsCanvas.getContext('2d');
+        
+        function adaptRetina(canvas, ctx) {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            return { width: rect.width, height: rect.height };
+        }
+        
+        let starsSize = adaptRetina(starsCanvas, starsCtx);
+        let meteorsSize = adaptRetina(meteorsCanvas, meteorsCtx);
+        
+        window.addEventListener('resize', () => {
+            starsSize = adaptRetina(starsCanvas, starsCtx);
+            meteorsSize = adaptRetina(meteorsCanvas, meteorsCtx);
+            initStars();
+            initMeteors();
+        });
+
+        // 星星动画
+        const STAR_COUNT = 500;
+        const stars = [];
+        
+        function initStars() {
+            stars.length = 0;
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: Math.random() * starsSize.width,
+                    y: Math.random() * starsSize.height,
+                    size: Math.random() * 2 + 1,
+                    color: `rgba(255, ${180 + Math.random() * 75}, ${180 + Math.random() * 75}, ${Math.random() * 0.5 + 0.5})`,
+                    blinkSpeed: Math.random() * 2 + 1,
+                    blinkTime: Math.random() * 1000
+                });
+            }
+        }
+        
+        function drawStars() {
+            starsCtx.clearRect(0, 0, starsSize.width, starsSize.height);
+            stars.forEach(star => {
+                const opacity = 0.5 + 0.5 * Math.sin((Date.now() - star.blinkTime) / (star.blinkSpeed * 1000));
+                const color = star.color.replace(/rgba$$(\d+), (\d+), (\d+), (\d+\.\d+)$$/, (_, r, g, b) => `rgba(${r}, ${g}, ${b}, ${opacity})`);
+                starsCtx.fillStyle = color;
+                starsCtx.beginPath();
+                starsCtx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                starsCtx.fill();
+                
+                // 星星移动效果
+                star.x += 0.1;
+                if (star.x > starsSize.width) { 
+                    star.x = 0; 
+                    star.y = Math.random() * starsSize.height; 
+                }
+            });
+        }
+
+        // 流星动画
+        const METEOR_COUNT = 30;
+        const meteors = [];
+        const METEOR_SPEED_RANGE = [5, 15];
+        const METEOR_TRAIL_LENGTH_RANGE = [50, 150];
+        const METEOR_ANGLE = Math.PI / 4;
+        
+        function initMeteors() {
+            meteors.length = 0;
+            for (let i = 0; i < METEOR_COUNT; i++) {
+                meteors.push({
+                    x: Math.random() * meteorsSize.width,
+                    y: -50,
+                    speed: Math.random() * (METEOR_SPEED_RANGE[1] - METEOR_SPEED_RANGE[0]) + METEOR_SPEED_RANGE[0],
+                    trailLength: Math.random() * (METEOR_TRAIL_LENGTH_RANGE[1] - METEOR_TRAIL_LENGTH_RANGE[0]) + METEOR_TRAIL_LENGTH_RANGE[0],
+                    color: `rgba(255, ${200 + Math.random() * 55}, ${200 + Math.random() * 55}, ${Math.random() * 0.3 + 0.7})`
+                });
+            }
+        }
+        
+        function drawMeteors() {
+            meteorsCtx.clearRect(0, 0, meteorsSize.width, meteorsSize.height);
+            meteors.forEach((meteor, index) => {
+                const dx = meteor.speed * Math.cos(METEOR_ANGLE);
+                const dy = meteor.speed * Math.sin(METEOR_ANGLE);
+                
+                meteor.x += dx;
+                meteor.y += dy;
+                
+                // 绘制流星轨迹
+                meteorsCtx.beginPath();
+                meteorsCtx.moveTo(meteor.x, meteor.y);
+                meteorsCtx.lineTo(
+                    meteor.x - dx * meteor.trailLength / meteor.speed,
+                    meteor.y - dy * meteor.trailLength / meteor.speed
+                );
+                
+                // 流星轨迹渐变
+                const gradient = meteorsCtx.createLinearGradient(
+                    meteor.x, meteor.y,
+                    meteor.x - dx * meteor.trailLength / meteor.speed,
+                    meteor.y - dy * meteor.trailLength / meteor.speed
+                );
+                gradient.addColorStop(0, meteor.color.replace(', 0.7)', ', 1)'));
+                gradient.addColorStop(1, meteor.color.replace('0.7', '0.0'));
+                
+                meteorsCtx.strokeStyle = gradient;
+                meteorsCtx.lineWidth = 2;
+                meteorsCtx.stroke();
+                
+                // 流星头部
+                meteorsCtx.beginPath();
+                meteorsCtx.arc(meteor.x, meteor.y, 2, 0, Math.PI * 2);
+                meteorsCtx.fillStyle = meteor.color.replace('0.7', '1');
+                meteorsCtx.fill();
+                
+                // 重置位置
+                if (meteor.x > meteorsSize.width + 100 || meteor.y > meteorsSize.height + 100) {
+                    meteor.x = Math.random() * meteorsSize.width / 2;
+                    meteor.y = -50;
+                    meteor.speed = Math.random() * (METEOR_SPEED_RANGE[1] - METEOR_SPEED_RANGE[0]) + METEOR_SPEED_RANGE[0];
+                }
+            });
+        }
+
+        // 动画循环
+        function animate() {
+            drawStars();
+            drawMeteors();
+            requestAnimationFrame(animate);
+        }
+        
+        // 初始化
+        initStars();
+        initMeteors();
+        animate();
+
+        // 情诗文案切换
+        const poemText = document.getElementById('poem');
+        const poemContainer = document.querySelector('.poem-container');
+        const phrases = [
+            "在星辰的注视下，你是我永恒的坐标",
+            "你的笑容比银河更璀璨",
+            "每一颗流星都承载着我对你的思念",
+            "你是我宇宙中最亮的星",
+            "在时间的尽头，我的爱依然如初",
+            "你的存在让我的世界有了光",
+            "繁星为证，此情不渝",
+            "穿越亿万光年，只为遇见你",
+            "我的心跳与星辰同频",
+            "你是我永不偏离的北极星"
+        ];
+        
+        poemContainer.addEventListener('click', function() {
+            const randomIndex = Math.floor(Math.random() * phrases.length);
+            poemText.style.opacity = 0;
+            
+            setTimeout(() => {
+                poemText.textContent = phrases[randomIndex];
+                poemText.style.opacity = 1;
+            }, 300);
+        });
+
+        // 音乐控制
+        const musicControl = document.getElementById('musicControl');
+        const bgMusic = document.getElementById('bgMusic');
+        let isPlaying = false;
+        
+        musicControl.addEventListener('click', function() {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicControl.style.boxShadow = 'none';
+            } else {
+                bgMusic.play().catch(e => console.log("音频播放失败:", e));
+                musicControl.style.boxShadow = '0 0 20px #ff0077';
+            }
+            isPlaying = !isPlaying;
+        });
+    </script>
+</body>
+</html>
